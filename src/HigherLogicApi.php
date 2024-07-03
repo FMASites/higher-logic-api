@@ -32,6 +32,12 @@ class HigherLogicApi
     {
         $this->userName = $userName;
         $this->password = $password;
+        $this->initializeClient();
+        $this->authenticateUser();
+    }
+
+    private function initializeClient()
+    {
         $this->client = new Client([
             'base_uri' => $this->url,
             'headers' => [
@@ -39,17 +45,19 @@ class HigherLogicApi
                 'Accept' => 'application/json',
             ],
         ]);
+    }
 
+    private function authenticateUser()
+    {
         try {
             $result = $this->callApi('Authenticate', [
                 'Password' => $this->password,
-                'UserName' => $this->username,
+                'UserName' => $this->userName,
             ]);
             $this->loginId = $result->LoginID;
             $this->sessionId = $result->SessionID;
             $this->userId = $result->UserID;
         } catch (\Exception $e) {
-            Log::error($e);
             $this->apiStatus = 0;
         }
     }
@@ -57,10 +65,7 @@ class HigherLogicApi
     protected function callApi($uri, $content = [])
     {
         if ($this->apiStatus) {
-            if (isset($this->sessionId) && isset($this->userId)) {
-                $content['SessionID'] = $this->sessionId;
-                $content['UserID'] = $this->userId;
-            }
+            $content = $this->addSessionInfo($content);
 
             try {
                 $response = $this->client->post($uri . '/', [
@@ -78,78 +83,36 @@ class HigherLogicApi
         return null;
     }
 
+    private function addSessionInfo($content)
+    {
+        if (isset($this->sessionId) && isset($this->userId)) {
+            $content['SessionID'] = $this->sessionId;
+            $content['UserID'] = $this->userId;
+        }
+        return $content;
+    }
+
     public function getRecipientByEmail($email)
     {
-        try {
-            $recipient = $this->callApi('SearchRecipient', ['Email' => $email]);
-            if (count($recipient)) {
-                return $recipient[0];
-            }
-        } catch (\Exception $e) {
-            Log::error($e);
-        }
-        return false;
+        $recipient = $this->callApi('SearchRecipient', ['Email' => $email]);
+        return $recipient && count($recipient) ? $recipient[0] : false;
     }
 
     public function addToGroup($userId, $groupId)
     {
-        try {
-            $res = $this->callApi('EditRecipientGroups', [
-                'ID' => $userId,
-                'NewGroups' => [(int) $groupId],
-                'UnsubscribeGroups' => [],
-            ]);
+        $res = $this->callApi('EditRecipientGroups', [
+            'ID' => $userId,
+            'NewGroups' => [(int) $groupId],
+            'UnsubscribeGroups' => [],
+        ]);
 
-            if ($res->Status == 1) {
-                return true;
-            }
-        } catch (\Exception $e) {
-            Log::error($e);
-        }
-        return false;
+        return $res && $res->Status == 1;
     }
 
     public function upsertRecipient($email, $firstName = null, $lastName = null, $zip = null, $company = null, $address = null, $city = null, $state = null, $phone = null)
     {
-        $recipientDetails = new \stdClass();
-        $recipientDetails->Email = $email;
-
-        $recipient = $this->getRecipientByEmail($email);
-        $upsertType = 'add';
-        if ($recipient) {
-            $upsertType = 'update';
-            $recipientDetails->ID = $recipient->ID;
-        }
-
-        if (isset($address)) {
-            $recipientDetails->Address = $address;
-        }
-        if (isset($city)) {
-            $recipientDetails->City = $city;
-        }
-        if (isset($company)) {
-            $recipientDetails->Company = $company;
-        }
-        if (isset($firstName)) {
-            $recipientDetails->FirstName = $firstName;
-        }
-        if (isset($lastName)) {
-            $recipientDetails->LastName = $lastName;
-        }
-        if (isset($phone)) {
-            $recipientDetails->Phone = $phone;
-        }
-        /*
-        if (isset($state)) {
-            $recipientDetails->State = 'Other';
-            if (array_key_exists($state, Abbreviations::$states)) {
-                $recipientDetails->State = Abbreviations::$states[$state];
-            }
-        }
-        */
-        if (isset($zip)) {
-            $recipientDetails->Zip = $zip;
-        }
+        $recipientDetails = $this->buildRecipientDetails($email, $firstName, $lastName, $zip, $company, $address, $city, $state, $phone);
+        $upsertType = $this->getUpsertType($email, $recipientDetails);
 
         $fields = [
             'RecipientDetails' => $recipientDetails,
@@ -157,12 +120,35 @@ class HigherLogicApi
             'UpsertType' => $upsertType,
             'ValidateEmail' => false,
         ];
-        try {
-            $res = $this->callApi('UpsertRecipient', $fields);
-            return $res->ID;
-        } catch (\Exception $e) {
-            Log::error($e);
+
+        $res = $this->callApi('UpsertRecipient', $fields);
+        return $res ? $res->ID : false;
+    }
+
+    private function buildRecipientDetails($email, $firstName, $lastName, $zip, $company, $address, $city, $state, $phone)
+    {
+        $recipientDetails = new \stdClass();
+        $recipientDetails->Email = $email;
+        $recipientDetails->FirstName = $firstName;
+        $recipientDetails->LastName = $lastName;
+        $recipientDetails->Zip = $zip;
+        $recipientDetails->Company = $company;
+        $recipientDetails->Address = $address;
+        $recipientDetails->City = $city;
+        $recipientDetails->State = $state;
+        $recipientDetails->Phone = $phone;
+
+        return $recipientDetails;
+    }
+
+    private function getUpsertType($email, &$recipientDetails)
+    {
+        $recipient = $this->getRecipientByEmail($email);
+        if ($recipient) {
+            $recipientDetails->ID = $recipient->ID;
+            return 'update';
         }
-        return false;
+
+        return 'add';
     }
 }

@@ -14,7 +14,7 @@
       }
     },
     "require": {
-      "php": "^7.3|^8.0",
+      "php": "^8.0",
       "illuminate/support": "^6.0|^7.0|^8.0|^9.0|^10.0",
       "guzzlehttp/guzzle": "^7.0"
     },
@@ -25,4 +25,12 @@
         ]
       }
     },
+    "require-dev": {
+      "phpunit/phpunit": "^9.0"
+    },
+    "autoload-dev": {
+      "psr-4": {
+        "FMASites\\HigherLogicApi\\Tests\\": "tests/"
+      }
+    }
 }
