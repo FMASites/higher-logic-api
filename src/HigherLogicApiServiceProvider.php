@@ -1,6 +1,6 @@
 <?php
 
-namespace FMASites\HigherLogicApi;
+namespace HigherLogicApi;
 
 use Illuminate\Support\ServiceProvider;
 

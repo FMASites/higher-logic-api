@@ -1,10 +1,11 @@
 <?php
 
-use FMASites\HigherLogicApi\HigherLogicApi;
+namespace FMASites\HigherLogicApi\Tests;
+
+use HigherLogicApi\HigherLogicApi;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Response;
 use PHPUnit\Framework\TestCase;
-use Psr\Http\Message\ResponseInterface;
 
 class HigherLogicApiTest extends TestCase
 {
@@ -14,11 +15,7 @@ class HigherLogicApiTest extends TestCase
     protected function setUp(): void
     {
         $this->client = $this->createMock(Client::class);
-        $this->api = $this->getMockBuilder(HigherLogicApi::class)
-            ->setConstructorArgs(['testUser', 'testPass'])
-            ->setMethods(['callApi'])
-            ->getMock();
-
+        $this->api = new HigherLogicApi('testUser', 'testPass');
         $this->api->client = $this->client;
     }
 
@@ -45,10 +42,15 @@ class HigherLogicApiTest extends TestCase
             (object) ['Email' => 'test@example.com', 'ID' => '123']
         ];
 
-        $this->api->method('callApi')
+        $partialMock = $this->getMockBuilder(HigherLogicApi::class)
+            ->setConstructorArgs(['testUser', 'testPass'])
+            ->onlyMethods(['callApi'])
+            ->getMock();
+
+        $partialMock->method('callApi')
             ->willReturn($recipientData);
 
-        $recipient = $this->api->getRecipientByEmail('test@example.com');
+        $recipient = $partialMock->getRecipientByEmail('test@example.com');
 
         $this->assertEquals('123', $recipient->ID);
     }
@@ -57,10 +59,15 @@ class HigherLogicApiTest extends TestCase
     {
         $response = (object) ['Status' => 1];
 
-        $this->api->method('callApi')
+        $partialMock = $this->getMockBuilder(HigherLogicApi::class)
+            ->setConstructorArgs(['testUser', 'testPass'])
+            ->onlyMethods(['callApi'])
+            ->getMock();
+
+        $partialMock->method('callApi')
             ->willReturn($response);
 
-        $result = $this->api->addToGroup('userId', 'groupId');
+        $result = $partialMock->addToGroup('userId', 'groupId');
 
         $this->assertTrue($result);
     }
@@ -69,10 +76,18 @@ class HigherLogicApiTest extends TestCase
     {
         $response = (object) ['ID' => 'new_recipient_id'];
 
-        $this->api->method('callApi')
+        $partialMock = $this->getMockBuilder(HigherLogicApi::class)
+            ->setConstructorArgs(['testUser', 'testPass'])
+            ->onlyMethods(['callApi', 'getRecipientByEmail'])
+            ->getMock();
+
+        $partialMock->method('callApi')
             ->willReturn($response);
 
-        $result = $this->api->upsertRecipient('new@example.com', 'First', 'Last', '12345');
+        $partialMock->method('getRecipientByEmail')
+            ->willReturn(false);
+
+        $result = $partialMock->upsertRecipient('new@example.com', 'First', 'Last', '12345');
 
         $this->assertEquals('new_recipient_id', $result);
     }
@@ -81,15 +96,20 @@ class HigherLogicApiTest extends TestCase
     {
         $recipient = (object) ['ID' => 'existing_recipient_id'];
 
-        $this->api->method('getRecipientByEmail')
+        $partialMock = $this->getMockBuilder(HigherLogicApi::class)
+            ->setConstructorArgs(['testUser', 'testPass'])
+            ->onlyMethods(['callApi', 'getRecipientByEmail'])
+            ->getMock();
+
+        $partialMock->method('getRecipientByEmail')
             ->willReturn($recipient);
 
         $response = (object) ['ID' => 'existing_recipient_id'];
 
-        $this->api->method('callApi')
+        $partialMock->method('callApi')
             ->willReturn($response);
 
-        $result = $this->api->upsertRecipient('existing@example.com', 'First', 'Last', '12345');
+        $result = $partialMock->upsertRecipient('existing@example.com', 'First', 'Last', '12345');
 
         $this->assertEquals('existing_recipient_id', $result);
     }

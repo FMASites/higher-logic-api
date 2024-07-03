@@ -1,6 +1,6 @@
 <?php
 
-namespace FMASites\HigherLogicApi;
+namespace HigherLogicApi;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
@@ -9,11 +9,11 @@ use Illuminate\Support\Facades\Log;
 class HigherLogicApi
 {
     private $url = 'https://dna.magnetmail.net/ApiAdapter/Rest/';
-    private $loginId;
-    private $sessionId;
-    private $userId;
+    public $loginId;
+    public $sessionId;
+    public $userId;
     public $apiStatus = 1;
-    private $client;
+    public $client;
     private $userName;
     private $password;
 
@@ -47,7 +47,7 @@ class HigherLogicApi
         ]);
     }
 
-    private function authenticateUser()
+    public function authenticateUser()
     {
         try {
             $result = $this->callApi('Authenticate', [
@@ -95,7 +95,12 @@ class HigherLogicApi
     public function getRecipientByEmail($email)
     {
         $recipient = $this->callApi('SearchRecipient', ['Email' => $email]);
-        return $recipient && count($recipient) ? $recipient[0] : false;
+
+        if (is_array($recipient) && count($recipient) > 0) {
+            return $recipient[0];
+        }
+
+        return false;
     }
 
     public function addToGroup($userId, $groupId)
