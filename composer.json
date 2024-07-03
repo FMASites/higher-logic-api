@@ -1,5 +1,5 @@
 {
-    "name": "fma/higher-logic-api",
+    "name": "fmasites/higher-logic-api",
     "description": "Sends a request to be added to a mail list on HigherLogic",
     "type": "library",
     "authors": [
