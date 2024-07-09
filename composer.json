@@ -10,23 +10,23 @@
     ],
     "autoload": {
       "psr-4": {
-        "HigherLogicApi\\": "src/"
+        "FMASites\\HigherLogicApi\\": "src/"
       }
     },
     "require": {
       "php": "^8.0",
-      "illuminate/support": "^6.0|^7.0|^8.0|^9.0|^10.0",
+      "illuminate/support": "^9.0|^10.0",
       "guzzlehttp/guzzle": "^7.0"
     },
     "extra": {
       "laravel": {
         "providers": [
-          "HigherLogicApi\\HigherLogicApiServiceProvider"
+          "FMASites\\HigherLogicApi\\HigherLogicApiServiceProvider"
         ]
       }
     },
     "require-dev": {
-      "phpunit/phpunit": "^9.0"
+      "phpunit/phpunit": "^11.0"
     },
     "autoload-dev": {
       "psr-4": {

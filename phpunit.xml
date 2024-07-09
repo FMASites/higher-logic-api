@@ -1,8 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit bootstrap="vendor/autoload.php">
+<phpunit
+        backupGlobals="false"
+        backupStaticProperties="false"
+        bootstrap="vendor/autoload.php"
+        cacheResult="false"
+        colors="true"
+        displayDetailsOnTestsThatTriggerWarnings="true"
+        processIsolation="false"
+        stopOnFailure="false"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.1/phpunit.xsd"
+        >
     <testsuites>
         <testsuite name="HigherLogicApi Test Suite">
             <directory>tests</directory>
         </testsuite>
     </testsuites>
+
+    <php>
+        <env name="APP_ENV" value="testing"/>
+        <env name="HIGHERLOGIC_USERNAME" value="test-username"/>
+        <env name="HIGHERLOGIC_PASSWORD" value="test-password"/>
+    </php>
+    <source>
+        <include>
+            <directory suffix=".php">./src</directory>
+        </include>
+    </source>
 </phpunit>
