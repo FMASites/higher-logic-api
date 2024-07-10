@@ -2,7 +2,7 @@
 
 namespace FMASites\HigherLogicApi\Tests;
 
-use HigherLogicApi\HigherLogicApi;
+use FMASites\HigherLogicApi\HigherLogicApi;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Response;
 use PHPUnit\Framework\TestCase;
