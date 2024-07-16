@@ -1,6 +1,7 @@
 {
     "name": "fmasites/higher-logic-api",
-    "description": "Sends a request to be added to a mail list on HigherLogic",
+    "version": "v1.0.0",
+    "description": "Tools for interacting with Higher Logic",
     "type": "library",
     "authors": [
         {

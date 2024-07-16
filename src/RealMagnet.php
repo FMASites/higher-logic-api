@@ -2,62 +2,44 @@
 
 namespace FMASites\HigherLogicApi;
 
-use GuzzleHttp\Client;
+use Exception;
+use GuzzleHttp\Client as GuzzleHttpClient;
 use GuzzleHttp\Exception\RequestException;
 use Illuminate\Support\Facades\Log;
+use Throwable;
 
-class HigherLogicApi
+class RealMagnet
 {
-    private $url = 'https://dna.magnetmail.net/ApiAdapter/Rest/';
-    public $loginId;
-    public $sessionId;
-    public $userId;
-    public $apiStatus = 1;
-    public $client;
-    private $userName;
-    private $password;
+    private GuzzleHttpClient $client;
+    public int $loginId = 0;
+    public ?string $sessionId = null;
+    public ?string $userId = null;
+    public int $apiStatus = 1;
 
-    public static $userFields = [
-        'Address',
-        'City',
-        'Email',
-        'FirstName',
-        'LastName',
-        'Phone',
-        'State',
-        'Zip',
-    ];
-
-    public function __construct($userName, $password)
+    public function __construct(GuzzleHttpClient $httpClient, $username, $password)
     {
-        $this->userName = $userName;
-        $this->password = $password;
-        $this->initializeClient();
-        $this->authenticateUser();
+        $this->client = $httpClient;
+        $this->authenticateUser($username, $password);
     }
 
-    private function initializeClient()
-    {
-        $this->client = new Client([
-            'base_uri' => $this->url,
-            'headers' => [
-                'Content-Type' => 'application/json',
-                'Accept' => 'application/json',
-            ],
-        ]);
-    }
-
-    public function authenticateUser()
+    public function authenticateUser($username, $password)
     {
         try {
             $result = $this->callApi('Authenticate', [
-                'Password' => $this->password,
-                'UserName' => $this->userName,
+                'Password' => $password,
+                'UserName' => $username,
             ]);
+
+            // API call failure and authentication failure looks like this:
+            if (is_null($result) || (!$result->LoginID && !$result->SessionID && !$result->UserID)) {
+                throw new Exception("Authentication failed for $username");
+            }
+
             $this->loginId = $result->LoginID;
             $this->sessionId = $result->SessionID;
             $this->userId = $result->UserID;
-        } catch (\Exception $e) {
+
+        } catch (Throwable $e) {
             $this->apiStatus = 0;
         }
     }
@@ -68,9 +50,7 @@ class HigherLogicApi
             $content = $this->addSessionInfo($content);
 
             try {
-                $response = $this->client->post($uri . '/', [
-                    'json' => $content,
-                ]);
+                $response = $this->client->post($uri, ['json' => $content]);
 
                 if ($response->getStatusCode() === 200) {
                     return json_decode($response->getBody()->getContents());
@@ -107,7 +87,7 @@ class HigherLogicApi
     {
         $res = $this->callApi('EditRecipientGroups', [
             'ID' => $userId,
-            'NewGroups' => [(int) $groupId],
+            'NewGroups' => [(int)$groupId],
             'UnsubscribeGroups' => [],
         ]);
 

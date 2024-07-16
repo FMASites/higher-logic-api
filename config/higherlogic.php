@@ -1,6 +1,8 @@
 <?php
 
 return [
-    'username' => env('HIGHERLOGIC_USERNAME'),
-    'password' => env('HIGHERLOGIC_PASSWORD'),
+    'realmagnet' => [
+        'username' => env('REALMAGNET_USERNAME'),
+        'password' => env('REALMAGNET_PASSWORD'),
+    ]
 ];

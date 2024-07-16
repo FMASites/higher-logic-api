@@ -1,33 +1,59 @@
 # higher-logic-api
-Laravel Service Provider that handles API requests to HigherLogic from a Laravel Application
+Laravel Service Provider that handles API interactions with Higher Logic's products (currently limited to Real Magnet).
 
-Publish the config file:
+Potentially helpful resources:
+* [Higher Logic Real Magnet REST API documentation](https://support.higherlogic.com/hc/en-us/articles/360032691632-REST-API)
+* [Laravel package development documentation](https://laravel.com/docs/packages)
+* [Laravel service providers documentation](https://laravel.com/docs/providers)
+* [Guzzle documentation](https://docs.guzzlephp.org/en/stable/), and in particular, the bit about [testing Guzzle clients](https://docs.guzzlephp.org/en/stable/testing.html)
+* A very old, but full of good hints [GitHub repo for real-magnet-sdk](https://github.com/jjpmann/real-magnet-sdk)
+
+## Add the package to the application
+The package can be added to your application using the Composer CLI:
 ```
-php artisan vendor:publish --provider="HigherLogicApi\HigherLogicApiServiceProvider" --tag=config
+composer require fmasites/higher-logic-api
 ```
 
-Add the following entries to the .env file in your Laravel projects:
-- HIGHERLOGIC_USERNAME=your_username
-- HIGHERLOGIC_PASSWORD=your_password
+Or, it can be added to the project by directly updating the `composer.json` file to include the package:
+```
+{
+    "name": "your-project-etc",
+    "type": "project",
+    ...
+    "require": {
+        ...
+        "fmasites/higher-logic-api": "*",
+        ...
+    },
+```
+And then running `composer update`.
 
+### Update the .env file
+Higher Logic provides a number of APIs for their various services, one of which is the Real Magnet API around which this
+package is focused. Thus, the initial `.env` variables are prefixed with "RealMagnet." Future updates may expand into
+other APIs which may require their own credentials.
+
+```
+REALMAGNET_USERNAME=theRealMagnetAPIUsername
+REALMAGNET_PASSWORD=theRealMagnetAPIPassword
+```
+
+## Usage
+The service provider creates a singleton object for the Laravel service container to use. When it is created, the
+credentials are used to automatically authenticate and be ready for use.
+
+Sample usage:
 
 ```php
-use FMASites\HigherLogicApi;
+use FMASites\HigherLogicApi\RealMagnet;
 
 class SomeController extends Controller
-{
-    public function storeGetUpdatesForm(Request $request, HigherLogicApi $api): JsonResponse
+{    
+    public function exampleStoringUserOptIn(Request $request, RealMagnet $api): JsonResponse
     {
         $validatedFields = $request->validate([
-            'form_id' => 'required',
-            'email' => 'required|email',
-            'event_name' => 'nullable',
-            'higherlogic_group_id' => 'required',
-            'consent' => 'required',
-            'recaptcha_response' => ['required', new ReCaptchaRule($request)],
+           // All the fields
         ]);
-
-        FormSubmission::quickSave($validatedFields);
 
         // Add to Higher Logic email group
         $higherLogicUserId = $api->upsertRecipient($validatedFields['email']);

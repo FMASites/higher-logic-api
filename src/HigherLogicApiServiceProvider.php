@@ -2,28 +2,36 @@
 
 namespace FMASites\HigherLogicApi;
 
+use GuzzleHttp\Client;
 use Illuminate\Support\ServiceProvider;
 
+/**
+ * Service Provider for Higher Logic services
+ */
 class HigherLogicApiServiceProvider extends ServiceProvider
 {
     public function register()
     {
         $this->mergeConfigFrom(__DIR__ . '/../config/higherlogic.php', 'higherlogic');
 
-        $this->app->singleton(HigherLogicApi::class, function ($app) {
-            $userName = config('higherlogic.username');
-            $password = config('higherlogic.password');
+        // One instance should do it
+        $this->app->singleton(RealMagnet::class, function ($app) {
+            $userName = config('higherlogic.realmagnet.username');
+            $password = config('higherlogic.realmagnet.password');
+            $client = new Client([
+                'base_uri' => 'https://dna.magnetmail.net/ApiAdapter/Rest/',
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json',
+                ],
+            ]);
 
-            return new HigherLogicApi($userName, $password);
+            return new RealMagnet($client, $userName, $password);
         });
     }
 
     public function boot()
     {
-        if ($this->app->runningInConsole()) {
-            $this->publishes([
-                __DIR__ . '/../config/higherlogic.php' => config_path('higherlogic.php'),
-            ], 'config');
-        }
+
     }
 }
