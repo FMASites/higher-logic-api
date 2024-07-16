@@ -9,12 +9,27 @@ Potentially helpful resources:
 * A very old, but full of good hints [GitHub repo for real-magnet-sdk](https://github.com/jjpmann/real-magnet-sdk)
 
 ## Add the package to the application
+First, because this package isn't on [Packagist](https://packagist.org/), a config entry needs to be made in the
+`composer.json` file to instruct Composer where to find it:
+
+```php
+{
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/FMASites/higher-logic-api"
+        }
+    ]
+}
+```
+
 The package can be added to your application using the Composer CLI:
 ```
 composer require fmasites/higher-logic-api
 ```
 
-Or, it can be added to the project by directly updating the `composer.json` file to include the package:
+Or, it can be added to the project by directly updating the `composer.json` file to include the package. If the app is
+built in a Docker container, this is more likely what you want to do:
 ```
 {
     "name": "your-project-etc",
@@ -26,7 +41,8 @@ Or, it can be added to the project by directly updating the `composer.json` file
         ...
     },
 ```
-And then running `composer update`.
+And then running `composer update` (if building locally), or `make composer-update` if building in a Docker container.
+It is very likely that this will trigger a request for a GitHub authentication token (for private repos).
 
 ### Update the .env file
 Higher Logic provides a number of APIs for their various services, one of which is the Real Magnet API around which this
