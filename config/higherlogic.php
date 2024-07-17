@@ -1,8 +1,10 @@
 <?php
 
 return [
-    'realmagnet' => [
-        'username' => env('REALMAGNET_USERNAME'),
-        'password' => env('REALMAGNET_PASSWORD'),
+    'fmasites' => [
+        'realmagnet' => [
+            'username' => env('REALMAGNET_USERNAME'),
+            'password' => env('REALMAGNET_PASSWORD'),
+        ]
     ]
 ];

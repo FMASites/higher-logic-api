@@ -16,8 +16,8 @@ class HigherLogicApiServiceProvider extends ServiceProvider
 
         // One instance should do it
         $this->app->singleton(RealMagnet::class, function ($app) {
-            $userName = config('higherlogic.realmagnet.username');
-            $password = config('higherlogic.realmagnet.password');
+            $userName = config('fmasites.higherlogic.realmagnet.username');
+            $password = config('fmasites.higherlogic.realmagnet.password');
             $client = new Client([
                 'base_uri' => 'https://dna.magnetmail.net/ApiAdapter/Rest/',
                 'headers' => [
