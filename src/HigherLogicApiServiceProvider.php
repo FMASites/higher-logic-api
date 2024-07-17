@@ -12,7 +12,9 @@ class HigherLogicApiServiceProvider extends ServiceProvider
 {
     public function register()
     {
-        $this->mergeConfigFrom(__DIR__ . '/../config/higherlogic.php', 'higherlogic');
+        // The config will live under the fmasites config key, which serves as an organization-wide namespace
+        // to prevent name collisions with other third-party packages.
+        $this->mergeConfigFrom(__DIR__ . '/../config/higherlogic.php', 'fmasites');
 
         // One instance should do it
         $this->app->singleton(RealMagnet::class, function ($app) {
