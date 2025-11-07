@@ -1,6 +1,6 @@
 {
     "name": "fmasites/higher-logic-api",
-    "version": "v1.0.5",
+    "version": "v1.0.6",
     "description": "Tools for interacting with Higher Logic",
     "type": "library",
     "authors": [
@@ -15,7 +15,7 @@
       }
     },
     "require": {
-      "php": ">=8.0 <8.4",
+      "php": ">=8.0 <=8.4",
       "illuminate/support": "^9.0|^10.0|^11.0|^12.0",
       "guzzlehttp/guzzle": "^7.0 || ^8.0"
     },
