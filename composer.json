@@ -1,6 +1,6 @@
 {
     "name": "fmasites/higher-logic-api",
-    "version": "v1.0.7",
+    "version": "v1.0.8",
     "description": "Tools for interacting with Higher Logic",
     "type": "library",
     "authors": [
